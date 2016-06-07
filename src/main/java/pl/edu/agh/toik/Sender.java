@@ -2,33 +2,27 @@ package pl.edu.agh.toik;
 
 import com.mashape.unirest.http.Unirest;
 import org.apache.http.HttpHost;
+import org.hyperic.sigar.*;
 import pl.edu.agh.student.smialek.tk.communications.client.CommunicationsClient;
+import pl.edu.agh.toik.data.Parameter;
+import pl.edu.agh.toik.data.SystemMonitor;
 
 import java.util.Random;
+import java.util.concurrent.*;
 
 public class Sender {
 
-    private static final Random random = new Random();
+    private static Sigar sigar = new Sigar();
+    private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-    private static final String[] PHONETIC_ALPHABET = new String[]{
-            "Alfa", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliett", "Kilo", "Lima",
-            "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey",
-            "X-ray", "Yankee", "Zulu"
-    };
-
-    private static String getRandomWord() {
-        return PHONETIC_ALPHABET[random.nextInt(PHONETIC_ALPHABET.length)];
-    }
 
     public static void main(String[] args) {
-        // Proxy - ignore this
+        BlockingQueue<Parameter> sensorsDataQueue = new LinkedBlockingQueue<>();
         configureProxy(args);
 
-        // Actual code - you probably need this
-        CommunicationsClient client = new CommunicationsClient("localhost", 8080, getRandomWord());
-        for(int i = 0; i < 25; i++) {
-            client.sendUpdate(getRandomWord(), getRandomWord());
-        }
+        CommunicationsClient client = new CommunicationsClient("localhost", 8080, "SYSTEM_MONITORUJACY");
+        SystemMonitor fetchAndSendData = new SystemMonitor(client, sensorsDataQueue);
+        executor.scheduleAtFixedRate(fetchAndSendData, 2, 1, TimeUnit.SECONDS);
     }
 
     private static void configureProxy(String[] args) {
