@@ -1,4 +1,4 @@
-package application;
+package pl.edu.agh.toik;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -9,6 +9,9 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import application.BoxPlotWidget;
+import application.BoxType;
+import application.Logger;
 import com.github.TKWensday1115.Chart7ComplexBarChart.ComplexBarChart;
 
 import javafx.application.Application;
