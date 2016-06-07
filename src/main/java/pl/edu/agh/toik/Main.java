@@ -15,7 +15,6 @@ import application.Logger;
 import com.github.TKWensday1115.Chart7ComplexBarChart.ComplexBarChart;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -43,22 +42,31 @@ public class Main extends Application {
     TermometerPanel lastConnectionElapsedTime;
     Logger httpSessions;
     ToCSVConverter converter;
+    private Container container;
+
+    private void initCommunication(){
+        container = new Container();
+        Receiver receiver = new Receiver();
+        receiver.startReceiving(container);
+    }
 
     private void pretendWorking() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int u = 0, n = 0, g = 0;
+                double free = 0, used = 0;
                 while (true) {
-                    Random r = new Random();
-                    u = r.nextInt(15) + 5;
-                    n = r.nextInt(15) + 5;
-                    g = r.nextInt(15) + 5;
                     try {
-                        Thread.sleep(600);
-                        freeRAM.setChartValue("Ram urwau", u);
-                        freeRAM.setChartValue("Ram nie rwau", n);
-                        freeRAM.setChartValue("Rama", g);
+                        String usedRam = container.getSingleRamStatus();
+                        while(usedRam == null){
+                            Thread.sleep(1000);
+                            usedRam = container.getSingleRamStatus();
+                        }
+                        used = Double.parseDouble(usedRam);
+                        free = 100 - used;
+                        Thread.sleep(1000);
+                        freeRAM.setChartValue("Wolny ram", free);
+                        freeRAM.setChartValue("Zajety ram", used);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -68,19 +76,19 @@ public class Main extends Application {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int u = 0, n = 0, g = 0;
+                double free = 0, used = 0;
                 while (true) {
-                    Random r = new Random();
-                    u = r.nextInt(15) + 5;
-                    n = r.nextInt(15) + 5;
-                    g = r.nextInt(15) + 5;
                     try {
-                        Thread.sleep(600);
-                        freeDiscSpace.setChartValue("adin", u);
-                        freeDiscSpace.setChartValue("dwa", n);
-                        freeDiscSpace.setChartValue("tri", g);
-                        freeDiscSpace.setChartValue("katiusza", g * 1.5);
-                        freeDiscSpace.setChartValue("dupa", u * 2);
+                        String usedDisk = container.getFreeSingleDiskSpaceStatus();
+                        while(usedDisk == null){
+                            Thread.sleep(2000);
+                            usedDisk = container.getFreeSingleDiskSpaceStatus();
+                        }
+                        free = Double.parseDouble(usedDisk);
+                        used = 100 - free;
+                        Thread.sleep(5000);
+                        freeDiscSpace.setChartValue("Free disk space", free);
+                        freeDiscSpace.setChartValue("Used disk space", used);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -93,8 +101,15 @@ public class Main extends Application {
                 while (true) {
                     Random r = new Random();
                     try {
+                        String sysProcessesCount = container.getSystemProcessesCount();
+                        if(sysProcessesCount == null){
+                            Thread.sleep(2000);
+                            sysProcessesCount = container.getSystemProcessesCount();
+                        }
+                        int sysProcessesCountAsInt = Integer.parseInt(sysProcessesCount);
                         Thread.sleep(600);
-                        systemProcessesCount.setTemperature(r.nextInt(100));
+                        systemProcessesCount.setTemperature(sysProcessesCountAsInt
+                        );
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -190,11 +205,16 @@ public class Main extends Application {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Random r = new Random();
                 processorUsage.addBox(100);
                 while (true) {
                     try {
-                        processorUsage.addData(0, r.nextInt(100));
+                        String cpuUsage = container.getSingleCpuStatus();
+                        while(cpuUsage == null){
+                            Thread.sleep(1000);
+                            cpuUsage = container.getSingleCpuStatus();
+                        }
+                        Double cpuUsageAsDouble = Double.parseDouble(cpuUsage);
+                        processorUsage.addData(0, cpuUsageAsDouble);
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -308,6 +328,7 @@ public class Main extends Application {
             frm.setVisible(true);
 
             // swingNode.set
+            initCommunication();
             pretendWorking();
             Scene scene = new Scene(root, 800, 600);
             scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
