@@ -20,3 +20,5 @@ hs_err_pid*
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+target/generated-sources/
+target/generated-test-sources/
