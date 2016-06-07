@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="sigar">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib/sigar" />
+    </CLASSES>
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/lib/sigar" />
+    </NATIVE>
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/sigar" recursive="false" />
+  </library>
+</component>
