@@ -7,7 +7,6 @@ import pl.edu.agh.student.smialek.tk.communications.client.CommunicationsClient;
 import pl.edu.agh.toik.data.Parameter;
 import pl.edu.agh.toik.data.SystemMonitor;
 
-import java.util.Random;
 import java.util.concurrent.*;
 
 public class Sender {

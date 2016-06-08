@@ -3,7 +3,9 @@ package pl.edu.agh.toik;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -11,13 +13,15 @@ import javax.swing.JPanel;
 
 import application.BoxPlotWidget;
 import application.BoxType;
-import application.Logger;
+import javafx.scene.paint.Color;
+import logger.component.Logger;
 import com.github.TKWensday1115.Chart7ComplexBarChart.ComplexBarChart;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import jersey.repackaged.com.google.common.collect.Lists;
 import pl.edu.agh.piechart.PieChartPanel;
 import pl.edu.agh.student.mkasprz.tk.chart3.SimpleTable;
 import pl.edu.agh.tk.ToCSVConverter;
@@ -59,7 +63,7 @@ public class Main extends Application {
                     try {
                         String usedRam = container.getSingleRamStatus();
                         while(usedRam == null){
-                            Thread.sleep(1000);
+                            Thread.sleep(10000);
                             usedRam = container.getSingleRamStatus();
                         }
                         used = Double.parseDouble(usedRam);
@@ -79,13 +83,13 @@ public class Main extends Application {
                 double free = 0, used = 0;
                 while (true) {
                     try {
-                        String usedDisk = container.getFreeSingleDiskSpaceStatus();
+                        String usedDisk = container.getUsedSingleDiskSpaceStatus();
                         while(usedDisk == null){
-                            Thread.sleep(2000);
-                            usedDisk = container.getFreeSingleDiskSpaceStatus();
+                            Thread.sleep(10000);
+                            usedDisk = container.getUsedSingleDiskSpaceStatus();
                         }
-                        free = Double.parseDouble(usedDisk);
-                        used = 100 - free;
+                        used = Double.parseDouble(usedDisk);
+                        free = 100 - used;
                         Thread.sleep(5000);
                         freeDiscSpace.setChartValue("Free disk space", free);
                         freeDiscSpace.setChartValue("Used disk space", used);
@@ -99,17 +103,16 @@ public class Main extends Application {
             @Override
             public void run() {
                 while (true) {
-                    Random r = new Random();
+
                     try {
                         String sysProcessesCount = container.getSystemProcessesCount();
-                        if(sysProcessesCount == null){
-                            Thread.sleep(2000);
+                        while(sysProcessesCount == null){
+                            Thread.sleep(10000);
                             sysProcessesCount = container.getSystemProcessesCount();
                         }
                         int sysProcessesCountAsInt = Integer.parseInt(sysProcessesCount);
                         Thread.sleep(600);
-                        systemProcessesCount.setTemperature(sysProcessesCountAsInt
-                        );
+                        systemProcessesCount.setTemperature(sysProcessesCountAsInt/2);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -152,9 +155,15 @@ public class Main extends Application {
                 while (true) {
                     Random r = new Random();
                     try {
+                        String tcps = container.getCurrTcpConnectionCount();
+                        while(tcps == null){
+                            Thread.sleep(10000);
+                            tcps = container.getCurrTcpConnectionCount();
+                        }
+                        Double tcpsAsDouble = Double.parseDouble(tcps);
                         Thread.sleep(600);
-                        tcpVSudp.addNewEntry(tcp, r.nextDouble() * 50, new Date());
-                        tcpVSudp.addNewEntry(udp, r.nextDouble() * 50, new Date());
+                        tcpVSudp.addNewEntry(tcp, tcpsAsDouble, new Date());
+                        tcpVSudp.addNewEntry(udp, tcpsAsDouble + r.nextDouble() * 10, new Date());
                     } catch (InterruptedException | DataLineDoesNotExistException e) {
                         e.printStackTrace();
                     }
@@ -170,11 +179,11 @@ public class Main extends Application {
 //					Random r = new Random();
 //					try {
 //						Thread.sleep(600);
-//						memoryUsagePerProcess.addData("odbyt", "0", i * 50 + r.nextInt(50));
-//						memoryUsagePerProcess.addData("odbyt1", "1", i * 50 + r.nextInt(50));
-//						memoryUsagePerProcess.addData("odbyt2", "2", i * 50 + r.nextInt(50));
-//						memoryUsagePerProcess.addData("odbyt3", "3", i * 50 + r.nextInt(50));
-//						memoryUsagePerProcess.addData("odbyt4", "4", i * 50 + r.nextInt(50));
+//						memoryUsagePerProcess.addData("sample", "0", i * 50 + r.nextInt(50));
+//						memoryUsagePerProcess.addData("sample1", "1", i * 50 + r.nextInt(50));
+//						memoryUsagePerProcess.addData("sample2", "2", i * 50 + r.nextInt(50));
+//						memoryUsagePerProcess.addData("sample3", "3", i * 50 + r.nextInt(50));
+//						memoryUsagePerProcess.addData("sample4", "4", i * 50 + r.nextInt(50));
 //						i++;
 //						System.out.println(i*50 + r.nextInt(50));
 //					} catch (InterruptedException e) {
@@ -183,6 +192,8 @@ public class Main extends Application {
 //				}
 //			}
 //		}).start();
+
+        /*
         int file1 = driveUsage.registerNewLine("file1");
         int file2 = driveUsage.registerNewLine("file2");
         int file3 = driveUsage.registerNewLine("file3");
@@ -202,6 +213,9 @@ public class Main extends Application {
                 }
             }
         }).start();
+        */
+
+        int cpu1 = driveUsage.registerNewLine("cpu1");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -214,9 +228,10 @@ public class Main extends Application {
                             cpuUsage = container.getSingleCpuStatus();
                         }
                         Double cpuUsageAsDouble = Double.parseDouble(cpuUsage);
+                        driveUsage.addNewEntry(cpu1, cpuUsageAsDouble, new Date());
                         processorUsage.addData(0, cpuUsageAsDouble);
                         Thread.sleep(100);
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException | DataLineDoesNotExistException e) {
                         e.printStackTrace();
                     }
                 }
@@ -234,6 +249,14 @@ public class Main extends Application {
         // e1.printStackTrace();
         // }
         // SwingNode swingNode = new SwingNode();
+
+        initCommunication();
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         BorderPane root = new BorderPane();
         JFrame frame = new JFrame("Main window");
         frame.setSize(1200, 700);
@@ -246,6 +269,58 @@ public class Main extends Application {
             // Użycie procesora - boxplot (ostatnie 100 odczytów)
             processorUsage = new BoxPlotWidget(10, 10, 200, 200, 2000, BoxType.FIFO, 100, 0);
             root.getChildren().add(processorUsage.getPane());
+
+            httpSessions = new Logger();
+            httpSessions.setHistorySize(5000);
+            httpSessions.setColor(Color.BLACK);
+            Scene loggerScene = new Scene(httpSessions);
+            Stage loggerStage = new Stage();
+            loggerStage.setScene(loggerScene);
+            loggerStage.show();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true) {
+                        String mupp = container.getMemoryUsagePerProcess();
+                        while (mupp == null || mupp.equals(":")) {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            mupp = container.getMemoryUsagePerProcess();
+                        }
+                        httpSessions.append(new Date(), mupp);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true) {
+                        String time = container.getUpTime();
+                        while (time == null) {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            time = container.getUpTime();
+                        }
+                        httpSessions.append(new Date(), time);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
 
             // Dostępna przestrzeń na dysku - wykres kołowy (pliki)
             freeDiscSpace = new PieChartPanel("Free disc space", 200, 200);
@@ -271,26 +346,26 @@ public class Main extends Application {
             tcpVSudp.setPreferredSize(new Dimension(100, 200));
             frame.getContentPane().add(tcpVSudp, BorderLayout.NORTH);
 
-            // Memory usage per process - słupkowy
-            memoryUsagePerProcess = new ComplexBarChart();
-            memoryUsagePerProcess.setHistoryLength(8);
-            memoryUsagePerProcess.setTitle("Memory Usage Per Process");
-            memoryUsagePerProcess.setLayoutX(200);
-            memoryUsagePerProcess.setPrefSize(200, 200);
-            Random r = new Random();
-            Scene s = new Scene(memoryUsagePerProcess, 200, 200);
-            primaryStage.setScene(s);
-            primaryStage.show();
-            root.getChildren().add(memoryUsagePerProcess);
-            memoryUsagePerProcess.addData("odbyt", "0", r.nextInt(50));
-            memoryUsagePerProcess.addData("odbyt1", "1", r.nextInt(50));
-            memoryUsagePerProcess.addData("odbyt2", "2", r.nextInt(50));
-            memoryUsagePerProcess.addData("odbyt3", "3", r.nextInt(50));
-            memoryUsagePerProcess.addData("odbyt4", "4", r.nextInt(50));
-            // memoryUsagePerProcess.addData("okreznica", "1", r.nextInt(50));
-            // memoryUsagePerProcess.addData("dwunastnica", "2", r.nextInt(50));
-            // memoryUsagePerProcess.addData("okreznica", "3", r.nextInt(50));
-            // memoryUsagePerProcess.addData("dwunastnica", "4", r.nextInt(50));
+//            // Memory usage per process - słupkowy
+//            memoryUsagePerProcess = new ComplexBarChart();
+//            memoryUsagePerProcess.setHistoryLength(8);
+//            memoryUsagePerProcess.setTitle("Memory Usage Per Process");
+//            memoryUsagePerProcess.setLayoutX(200);
+//            memoryUsagePerProcess.setPrefSize(200, 200);
+//            Random r = new Random();
+//            Scene s = new Scene(memoryUsagePerProcess, 200, 200);
+//            primaryStage.setScene(s);
+//            primaryStage.show();
+//            root.getChildren().add(memoryUsagePerProcess);
+//            memoryUsagePerProcess.addData("sample", "0", r.nextInt(50));
+//            memoryUsagePerProcess.addData("sample1", "1", r.nextInt(50));
+//            memoryUsagePerProcess.addData("sample2", "2", r.nextInt(50));
+//            memoryUsagePerProcess.addData("sample3", "3", r.nextInt(50));
+//            memoryUsagePerProcess.addData("sample4", "4", r.nextInt(50));
+//            // memoryUsagePerProcess.addData("okreznica", "1", r.nextInt(50));
+//            // memoryUsagePerProcess.addData("dwunastnica", "2", r.nextInt(50));
+//            // memoryUsagePerProcess.addData("okreznica", "3", r.nextInt(50));
+//            // memoryUsagePerProcess.addData("dwunastnica", "4", r.nextInt(50));
 
             // Długośc kolejki wątków czekających na użycie procesora - wykres w
             // formie termometru
@@ -305,13 +380,13 @@ public class Main extends Application {
             webParameters = new SimpleTable();
 
             // Obecne zużycie dysku twardego (zapis, odczyt) - wykres liniowy
-            driveUsage = HistoryChartFactory.createNew("Usage of hard drive (read/write)", "time", TimeUnit.Second,
+            driveUsage = HistoryChartFactory.createNew("Usage of processor ", "time", TimeUnit.Second,
                     "count", "");
             driveUsage.setPreferredSize(new Dimension(100, 200));
             frame.getContentPane().add(driveUsage, BorderLayout.SOUTH);
 
             // Ilość otwartych sesji http - logger + CSV
-            httpSessions = new Logger();
+
             converter = new ToCSVConverter();
 
             // Termometr pokazujący czas od ostatniej komunikacji. Zazwyczaj
@@ -328,15 +403,71 @@ public class Main extends Application {
             frm.setVisible(true);
 
             // swingNode.set
-            initCommunication();
             pretendWorking();
+
             Scene scene = new Scene(root, 800, 600);
-            scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+            //scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
             primaryStage.setScene(scene);
             primaryStage.show();
+            //showMemoryUsagePerProcess(primaryStage, root);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void showMemoryUsagePerProcess(Stage primaryStage, BorderPane root){
+        // Memory usage per process - słupkowy
+        memoryUsagePerProcess = new ComplexBarChart();
+        memoryUsagePerProcess.setHistoryLength(8);
+        memoryUsagePerProcess.setTitle("Memory Usage Per Process");
+        memoryUsagePerProcess.setLayoutX(200);
+        memoryUsagePerProcess.setPrefSize(200, 200);
+        Random r = new Random();
+        Scene s = new Scene(memoryUsagePerProcess, 200, 200);
+        primaryStage.setScene(s);
+        primaryStage.show();
+        root.getChildren().add(memoryUsagePerProcess);
+        while(true) {
+            try {
+                String memUsagePerProcess = container.getMemoryUsagePerProcess();
+                while(memUsagePerProcess == null || memUsagePerProcess.equals(":")){
+                    Thread.sleep(5000);
+                    memUsagePerProcess = container.getMemoryUsagePerProcess();
+                }
+                List<MemUsagePerProcess> memUsagePerProcessesList = parseMemUsagePerProcess(memUsagePerProcess);
+                for(MemUsagePerProcess mupp : memUsagePerProcessesList) {
+                    memoryUsagePerProcess.addData(mupp.getProcess(), "0", Double.parseDouble(mupp.getUsage()));
+                }
+
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // memoryUsagePerProcess.addData("okreznica", "1", r.nextInt(50));
+            // memoryUsagePerProcess.addData("dwunastnica", "2", r.nextInt(50));
+            // memoryUsagePerProcess.addData("okreznica", "3", r.nextInt(50));
+            // memoryUsagePerProcess.addData("dwunastnica", "4", r.nextInt(50));
+        }
+    }
+
+    public List<MemUsagePerProcess> parseMemUsagePerProcess(String string){
+        List<MemUsagePerProcess> memUsagePerProcessList = Lists.newArrayList();
+        System.out.println("#########################################      " + string + "    ###############################################");
+        String[] parts = string.split(":");
+        String names = parts[0];
+        String values = parts[1];
+        String [] nameTable = names.split(";");
+        String [] valueTable = values.split(";");
+        if(nameTable.length == valueTable.length){
+            for(int i = 0; i < nameTable.length; i++){
+                memUsagePerProcessList.add(new MemUsagePerProcess(nameTable[i], valueTable[i]));
+            }
+        }else{
+            System.out.println("VERY BAD ERROR WHILE PARSING MEMORY USAGE PER PROCESS!");
+        }
+        return memUsagePerProcessList;
     }
 
     public static void main(String[] args) {

@@ -9,23 +9,25 @@ import java.util.Queue;
 public class Container {
     Queue<String> ramStats;
     Queue<String> cpuUsage;
-    Queue<String> usedDiskSpacePercentAsInt;
+    Queue<String> usedDiskSpacePercent;
     Queue<String> systemProcessesCount;
     Queue<String> upTime;
     Queue<String> currTcpConnectionCount;
-    //Queue<>
+    Queue<String> memoryUsagePerProcess;
+
+
 
     public Container(){
         ramStats = new LinkedList<String>();
         cpuUsage = new LinkedList<String>();
-        usedDiskSpacePercentAsInt = new LinkedList<String>();
+        usedDiskSpacePercent = new LinkedList<String>();
         systemProcessesCount = new LinkedList<String>();
         upTime = new LinkedList<String>();
-
-
-        ramStats.add("10.0");
-        cpuUsage.add("23.5");
-        usedDiskSpacePercentAsInt.add("75.2");
+        currTcpConnectionCount = new LinkedList<String>();
+        memoryUsagePerProcess = new LinkedList<String>();
+//        ramStats.add("10.0");
+//        cpuUsage.add("23.5");
+//        usedDiskSpacePercent.add("75.2");
     }
 
     public void addSingleRamStatus(String s){
@@ -53,12 +55,12 @@ public class Container {
     }
 
     public void addFreeSingleDiskSpaceStatus(String s){
-        usedDiskSpacePercentAsInt.add(s);
+        usedDiskSpacePercent.add(s);
     }
 
-    public String getFreeSingleDiskSpaceStatus(){
-        if(!usedDiskSpacePercentAsInt.isEmpty()) {
-            return usedDiskSpacePercentAsInt.remove();
+    public String getUsedSingleDiskSpaceStatus(){
+        if(!usedDiskSpacePercent.isEmpty()) {
+            return usedDiskSpacePercent.remove();
         }else{
             return null;
         }
@@ -99,4 +101,19 @@ public class Container {
             return null;
         }
     }
+
+
+    public void addMemoryUsagePerProcess(String s){
+        memoryUsagePerProcess.add(s);
+    }
+
+    public String getMemoryUsagePerProcess(){
+        if(!memoryUsagePerProcess.isEmpty()) {
+            return memoryUsagePerProcess.remove();
+        }else{
+            return null;
+        }
+    }
+
+
 }

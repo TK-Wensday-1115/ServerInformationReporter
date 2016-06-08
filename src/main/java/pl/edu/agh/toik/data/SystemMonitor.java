@@ -39,7 +39,8 @@ public class SystemMonitor implements Runnable {
 
         try {
                 Parameter parameter = sensorsDataQueue.take();
-                client.sendUpdate(parameter.getName(), parameter.getValue());
+                client.sendUpdate(parameter.getValue(), parameter.getName());
+                System.out.println("Name " + parameter.getName() + " Value " + parameter.getValue());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

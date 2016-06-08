@@ -30,19 +30,20 @@ public class Receiver {
                     container.addUpTime(reading.getValue());
                 }else if(reading.getColor().equals("CURR_CONN_COUNT")){
                     container.addCurrTcpConnectionCount(reading.getValue());
-                }else if(reading.getColor().equals("PROC_CPU_USAGE")){
-                    //proc cpu usage per process
+                }else if(reading.getColor().equals("PROC_CPU_USAGE")){      //proc cpu usage per process
+                    container.addMemoryUsagePerProcess(reading.getValue());
                 }else if(reading.getColor().equals("MEM_USAGE")){
                     container.addSingleRamStatus(reading.getValue());
-                }
+                }else System.out.println("nic urwau");
 
 
-//                System.out.format("[%s] %s: <%s> %s\n",
-//                        dateFormatter.format(reading.getTimestamp().toInstant()), reading.getSensorName(),
-//                        reading.getColor(), reading.getValue()
-//                );
+                System.out.format("[%s] %s: <%s> %s\n",
+                        dateFormatter.format(reading.getTimestamp().toInstant()), reading.getSensorName(),
+                        reading.getColor(), reading.getValue()
+                );
             }
         });
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         CommunicationsServer.start(8080);
         System.out.println("Receiver started");
     }
